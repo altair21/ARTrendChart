@@ -8,7 +8,7 @@
 
 #import "ARTrendChart.h"
 
-@interface ARTrendChart()
+@interface ARTrendChart() <UIScrollViewDelegate>
 
 //data
 @property (weak, nonatomic) NSArray<NSString*>* xAxisItem;
@@ -62,21 +62,21 @@
 	//add views
 	UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
 	scrollView.backgroundColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
+//	[scrollView setCanCancelContentTouches:YES];
+//	[scrollView setDelaysContentTouches:NO];
+	[scrollView setBounces:NO];
+	[scrollView setShowsHorizontalScrollIndicator:NO];
 	self.scrollView = scrollView;
 	[self addSubview:scrollView];
 	
 	UIView* yAxisView = [[UIView alloc] initWithFrame:CGRectMake(10, 10, self.frame.size.width / 2, self.frame.size.height - 10)];
-//	yAxisView.layer.borderColor = [UIColor blackColor].CGColor;
-//	yAxisView.layer.borderWidth = 1.0f;
 	self.yAxisView = yAxisView;
 	[self addSubview:yAxisView];
 	
 	UIView* xAxisView = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height - 25, self.frame.size.width, 25)];
 	xAxisView.backgroundColor = [UIColor colorWithRed:0.9608 green:0.9608 blue:0.9608 alpha:0.9608];
-//	xAxisView.layer.borderColor = [UIColor blackColor].CGColor;
-//	xAxisView.layer.borderWidth = 1.0f;
 	self.xAxisView = xAxisView;
-	[self addSubview:xAxisView];
+	[self.scrollView addSubview:xAxisView];
 	
 }
 
@@ -93,8 +93,9 @@
 	_yAxisTextFontSize = yAxisTextFontSize;
 	_yAxisTextColor = yAxisTextColor;
 	
-	CGSize labelSize = [@"text" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:yAxisTextFontSize]}];
+	CGSize labelSize = [@"20000" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:yAxisTextFontSize]}];
 	CGFloat padding = (_yAxisView.frame.size.height - _numberOfYElements * labelSize.height) / (_numberOfYElements + 1);
+	_yAxisView.frame = CGRectMake(_yAxisView.frame.origin.x, _yAxisView.frame.origin.y, 0, _yAxisView.frame.size.height);
 	__block int index = 1;
 	for (NSNumber* num in yAxisItem) {
 		UILabel* label = [[UILabel alloc] init];
@@ -127,10 +128,10 @@
 	_xAxisTextFontSize = xAxisTextFontSize;
 	_xAxisTextColor = xAxisTextColor;
 	
-	CGSize labelSize = [@"text" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:xAxisTextFontSize]}];
-	labelSize = CGSizeMake(labelSize.width + 10, labelSize.height + 10);
+	CGSize labelSize = [@"06/04" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:xAxisTextFontSize]}];
 	CGFloat padding = 10.0f;
-	_xAxisView.frame = CGRectMake(padding * 0.5, self.frame.size.height - labelSize.height, self.frame.size.width, self.scrollView.frame.size.height);
+	labelSize = CGSizeMake(labelSize.width + padding, labelSize.height);
+	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - labelSize.height - 2 * padding, _numberOfXElements * (labelSize.width + padding) + labelSize.width, labelSize.height + 2 * padding);
 	int index = 0;
 	for (NSString* str in xAxisItem) {
 		UILabel* label = [[UILabel alloc] init];
@@ -138,7 +139,7 @@
 		label.textAlignment = NSTextAlignmentCenter;
 		label.font = [UIFont systemFontOfSize:xAxisTextFontSize];
 		label.textColor = xAxisTextColor;
-		label.frame = CGRectMake(index * (padding + labelSize.width), 0, _numberOfXElements * (labelSize.width + padding) - padding * 0.5, labelSize.height);
+		label.frame = CGRectMake(index * (padding + labelSize.width) + labelSize.width, padding * 0.666666, labelSize.width, labelSize.height + padding * 0.5);
 		[self.xAxisView addSubview:label];
 		index++;
 	}
@@ -151,7 +152,11 @@
 		label.frame = CGRectMake(index * (padding + labelSize.width), 0, _numberOfXElements * (labelSize.width + padding) - padding * 0.5, labelSize.height);
 		[self.xAxisView addSubview:label];
 	}
-	self.scrollView.contentSize = self.xAxisView.frame.size;
+	self.scrollView.contentSize = CGSizeMake(_xAxisView.frame.size.width, self.scrollView.frame.size.height);
+	NSLog(@"%lf %lf", self.scrollView.contentSize.width, self.scrollView.contentSize.height);
+	[self.scrollView setScrollEnabled:YES];
+	
 }
+
 
 @end

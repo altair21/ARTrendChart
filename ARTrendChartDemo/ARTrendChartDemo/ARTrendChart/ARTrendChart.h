@@ -16,6 +16,7 @@
 @property (weak, nonatomic) UIColor* trendLineColor;
 @property (weak, nonatomic) UIColor* selectColor;
 
+- (instancetype)initWithFrame:(CGRect)frame;
 - (void)setYAxisItem:(NSArray*)yAxisItem yAxisItemSummary:(NSString*)yAxisSummary yAxisTextFontSize:(CGFloat)yAxisTextFontSize yAxisTextColor:(UIColor*)yAxisTextColor;
 - (void)setXAxisItem:(NSArray*)xAxisItem xAxisItemSummary:(NSString*)xAxisSummary xAxisTextFontSize:(CGFloat)xAxisTextFontSize xAxisTextColor:(UIColor*)xAxisTextColor;
 
