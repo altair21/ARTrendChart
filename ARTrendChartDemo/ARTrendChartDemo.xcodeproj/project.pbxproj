@@ -233,7 +233,8 @@
 				TargetAttributes = {
 					82EB82021D17AED7004C2FCC = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = X72NNDN3GJ;
+						DevelopmentTeam = 7ZB4J6GUHQ;
+						DevelopmentTeamName = "Bohao Chen";
 					};
 					82EB821B1D17AED8004C2FCC = {
 						CreatedOnToolsVersion = 7.3;

@@ -7,6 +7,7 @@
 //
 
 #import "ARTrendChart.h"
+#import "UIBezierPath+LxThroughPointsBezier.h"
 
 @interface ARTrendChart() <UIScrollViewDelegate>
 
@@ -52,6 +53,7 @@
 }
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
 	[self ARTrendChartInit];
 }
 
@@ -62,6 +64,7 @@
 - (void)ARTrendChartInit {
 	//init property
 	UIView* trendChart = [[UIView alloc] initWithFrame:self.frame];
+    self.trendChart = trendChart;
 	[self addSubview:trendChart];
 	self.backgroundColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
 	self.trendAreaColor = [UIColor colorWithRed:0.4824 green:0.6118 blue:0.8392 alpha:1];
@@ -186,9 +189,23 @@
 		[view removeFromSuperview];
 	}
 	self.trendChart.layer.sublayers = nil;
+    [self addSubview:self.trendChart];
+    _pointArr = [[NSMutableArray alloc] init];
 	for (int i = 0; i < dataArr.count; i++) {
 		[_pointArr addObject:[NSValue valueWithCGPoint:CGPointMake(_xAxisTrailing + _xAxisPadding * i + _xAxisLabelSize.width * 0.5, [dataArr[i] doubleValue])]];
 	}
+    
+    UIBezierPath* curve = [UIBezierPath bezierPath];
+    [curve moveToPoint:[_pointArr.firstObject CGPointValue]];
+    [curve addBezierThroughPoints:_pointArr];
+    
+    CAShapeLayer* shapeLayer = [CAShapeLayer layer];
+    shapeLayer.strokeColor = self.trendLineColor.CGColor;
+    shapeLayer.fillColor = self.trendLineColor.CGColor;
+    shapeLayer.lineWidth = 3;
+    shapeLayer.path = curve.CGPath;
+    shapeLayer.lineCap = kCALineCapRound;
+    [self.trendChart.layer addSublayer:shapeLayer];
 }
 
 

@@ -24,8 +24,10 @@
 	[super viewDidAppear:animated];
 	
 	ARTrendChart* chart = [[ARTrendChart alloc] initWithFrame:CGRectMake(0, 40, 320, 230)];
+    [chart setBackgroundColor:[UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1] trendAreaColor:[UIColor greenColor] trendLineColor:[UIColor whiteColor] selectColor:[UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1]];
 	[chart setYAxisItem:@[@70.0, @90.0, @110.0, @130.0] yAxisItemSummary:@"血压 mm.HG" yAxisTextFontSize:14.0 yAxisTextColor:[UIColor whiteColor]];
 	[chart setXAxisItem:@[@"06/01", @"06/02", @"06/03", @"06/04", @"06/05", @"06/06", @"06/07", @"06/08", @"06/09"] xAxisItemSummary:nil xAxisTextFontSize:14.0 xAxisTextColor:[UIColor colorWithRed:0.6 green:0.6 blue:0.6 alpha:1]];
+    [chart setData:@[@73.0, @84.3, @88.5, @81.3, @78.5, @76.3]];
 	[self.view addSubview:chart];
 	
 }
