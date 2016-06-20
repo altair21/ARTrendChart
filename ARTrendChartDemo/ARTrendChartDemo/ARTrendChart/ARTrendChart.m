@@ -182,6 +182,10 @@
 - (void)setData:(NSArray *)dataArr {
 	self.dataArr = dataArr;
 	self.trendChart.frame = CGRectMake(0, 0, _canvasWidth, self.frame.size.height);
+	for (UIView* view in self.trendChart.subviews) {
+		[view removeFromSuperview];
+	}
+	self.trendChart.layer.sublayers = nil;
 	for (int i = 0; i < dataArr.count; i++) {
 		[_pointArr addObject:[NSValue valueWithCGPoint:CGPointMake(_xAxisTrailing + _xAxisPadding * i + _xAxisLabelSize.width * 0.5, [dataArr[i] doubleValue])]];
 	}
