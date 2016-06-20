@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		82B9B7621D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.m in Sources */ = {isa = PBXBuildFile; fileRef = 82B9B7611D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.m */; };
 		82EB82081D17AED7004C2FCC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB82071D17AED7004C2FCC /* main.m */; };
 		82EB820B1D17AED7004C2FCC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB820A1D17AED7004C2FCC /* AppDelegate.m */; };
 		82EB820E1D17AED7004C2FCC /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB820D1D17AED7004C2FCC /* ViewController.m */; };
@@ -36,6 +37,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		82B9B7601D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIBezierPath+LxThroughPointsBezier.h"; sourceTree = "<group>"; };
+		82B9B7611D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIBezierPath+LxThroughPointsBezier.m"; sourceTree = "<group>"; };
 		82EB82031D17AED7004C2FCC /* ARTrendChartDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARTrendChartDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82EB82071D17AED7004C2FCC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		82EB82091D17AED7004C2FCC /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -81,6 +84,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		82B9B7631D17FCD5000DCF91 /* UIBezierPath+LxThroughPointsBezier */ = {
+			isa = PBXGroup;
+			children = (
+				82B9B7601D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.h */,
+				82B9B7611D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.m */,
+			);
+			name = "UIBezierPath+LxThroughPointsBezier";
+			sourceTree = "<group>";
+		};
 		82EB81FA1D17AED7004C2FCC = {
 			isa = PBXGroup;
 			children = (
@@ -147,6 +159,7 @@
 		82EB82391D17AF10004C2FCC /* ARTrendChart */ = {
 			isa = PBXGroup;
 			children = (
+				82B9B7631D17FCD5000DCF91 /* UIBezierPath+LxThroughPointsBezier */,
 				82EB823A1D17B0AB004C2FCC /* ARTrendChart.h */,
 				82EB823B1D17B0AB004C2FCC /* ARTrendChart.m */,
 			);
@@ -287,6 +300,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				82EB820E1D17AED7004C2FCC /* ViewController.m in Sources */,
+				82B9B7621D17FCC9000DCF91 /* UIBezierPath+LxThroughPointsBezier.m in Sources */,
 				82EB820B1D17AED7004C2FCC /* AppDelegate.m in Sources */,
 				82EB82081D17AED7004C2FCC /* main.m in Sources */,
 				82EB823C1D17B0AB004C2FCC /* ARTrendChart.m in Sources */,

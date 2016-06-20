@@ -13,6 +13,7 @@
 //data
 @property (weak, nonatomic) NSArray<NSString*>* xAxisItem;
 @property (weak, nonatomic) NSArray<NSNumber*>* yAxisItem;
+@property (weak, nonatomic) NSArray* dataArr;
 
 //view
 @property (weak, nonatomic) UIScrollView* scrollView;
@@ -33,6 +34,13 @@
 	CGFloat _xAxisTextFontSize;
 	UIColor* _xAxisTextColor;
 	int _numberOfXElements;
+	
+	CGFloat _xAxisTrailing;
+	CGSize _xAxisLabelSize;
+	CGFloat _xAxisPadding;
+	
+	NSMutableArray* _pointArr;
+	CGFloat _canvasWidth;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -53,11 +61,14 @@
 
 - (void)ARTrendChartInit {
 	//init property
+	UIView* trendChart = [[UIView alloc] initWithFrame:self.frame];
+	[self addSubview:trendChart];
 	self.backgroundColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
 	self.trendAreaColor = [UIColor colorWithRed:0.4824 green:0.6118 blue:0.8392 alpha:1];
 	self.trendLineColor = [UIColor whiteColor];
 	_yAxisTextColor = [UIColor whiteColor];
 	_yAxisTextFontSize = 14.0f;
+	_canvasWidth = 0;
 	
 	//add views
 	UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
@@ -129,10 +140,13 @@
 	_xAxisTextColor = xAxisTextColor;
 	
 	CGSize labelSize = [@"06/04" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:xAxisTextFontSize]}];
+	_xAxisLabelSize = labelSize;
 	CGFloat padding = 10.0f;
 	labelSize = CGSizeMake(labelSize.width + padding, labelSize.height);
-	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - labelSize.height - 2 * padding, _numberOfXElements * (labelSize.width + padding) + labelSize.width, labelSize.height + 2 * padding);
+	_canvasWidth = _numberOfXElements * (labelSize.width + padding) + labelSize.width;
+	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - labelSize.height - 2 * padding, _canvasWidth, labelSize.height + 2 * padding);
 	int index = 0;
+	_xAxisTrailing = labelSize.width;
 	for (NSString* str in xAxisItem) {
 		UILabel* label = [[UILabel alloc] init];
 		label.text = str;
@@ -155,7 +169,22 @@
 	self.scrollView.contentSize = CGSizeMake(_xAxisView.frame.size.width, self.scrollView.frame.size.height);
 	NSLog(@"%lf %lf", self.scrollView.contentSize.width, self.scrollView.contentSize.height);
 	[self.scrollView setScrollEnabled:YES];
-	
+}
+
+- (void)setBackgroundColor:(UIColor *)backgroundColor trendAreaColor:(UIColor *)trendAreaColor trendLineColor:(UIColor *)trendLineColor selectColor:(UIColor *)selectColor {
+	self.backgroundColor = backgroundColor;
+	self.scrollView.backgroundColor = backgroundColor;
+	self.trendAreaColor = trendAreaColor;
+	self.trendLineColor = trendLineColor;
+	self.selectColor = selectColor;
+}
+
+- (void)setData:(NSArray *)dataArr {
+	self.dataArr = dataArr;
+	self.trendChart.frame = CGRectMake(0, 0, _canvasWidth, self.frame.size.height);
+	for (int i = 0; i < dataArr.count; i++) {
+		[_pointArr addObject:[NSValue valueWithCGPoint:CGPointMake(_xAxisTrailing + _xAxisPadding * i + _xAxisLabelSize.width * 0.5, [dataArr[i] doubleValue])]];
+	}
 }
 
 
