@@ -16,7 +16,6 @@
 		82EB82211D17AED8004C2FCC /* ARTrendChartDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB82201D17AED8004C2FCC /* ARTrendChartDemoTests.m */; };
 		82EB822C1D17AED8004C2FCC /* ARTrendChartDemoUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB822B1D17AED8004C2FCC /* ARTrendChartDemoUITests.m */; };
 		82EB823C1D17B0AB004C2FCC /* ARTrendChart.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB823B1D17B0AB004C2FCC /* ARTrendChart.m */; };
-		82EB823F1D17B378004C2FCC /* ARTrendChartData.m in Sources */ = {isa = PBXBuildFile; fileRef = 82EB823E1D17B378004C2FCC /* ARTrendChartData.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,8 +54,6 @@
 		82EB822D1D17AED8004C2FCC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		82EB823A1D17B0AB004C2FCC /* ARTrendChart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTrendChart.h; path = ARTrendChart/ARTrendChart.h; sourceTree = "<group>"; };
 		82EB823B1D17B0AB004C2FCC /* ARTrendChart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARTrendChart.m; path = ARTrendChart/ARTrendChart.m; sourceTree = "<group>"; };
-		82EB823D1D17B378004C2FCC /* ARTrendChartData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTrendChartData.h; sourceTree = "<group>"; };
-		82EB823E1D17B378004C2FCC /* ARTrendChartData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTrendChartData.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,8 +149,6 @@
 			children = (
 				82EB823A1D17B0AB004C2FCC /* ARTrendChart.h */,
 				82EB823B1D17B0AB004C2FCC /* ARTrendChart.m */,
-				82EB823D1D17B378004C2FCC /* ARTrendChartData.h */,
-				82EB823E1D17B378004C2FCC /* ARTrendChartData.m */,
 			);
 			name = ARTrendChart;
 			sourceTree = "<group>";
@@ -293,7 +288,6 @@
 			files = (
 				82EB820E1D17AED7004C2FCC /* ViewController.m in Sources */,
 				82EB820B1D17AED7004C2FCC /* AppDelegate.m in Sources */,
-				82EB823F1D17B378004C2FCC /* ARTrendChartData.m in Sources */,
 				82EB82081D17AED7004C2FCC /* main.m in Sources */,
 				82EB823C1D17B0AB004C2FCC /* ARTrendChart.m in Sources */,
 			);
