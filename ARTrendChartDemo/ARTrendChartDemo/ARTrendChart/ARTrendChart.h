@@ -12,6 +12,7 @@
 
 
 @property (weak, nonatomic) UIView* trendChart;
+//@property (weak, nonatomic) id<UIGestureRecognizerDelegate> delegate;
 //@property (weak, nonatomic) UIColor* backgroundColor;
 //@property (weak, nonatomic) UIColor* trendAreaColor;
 //@property (weak, nonatomic) UIColor* trendLineColor;

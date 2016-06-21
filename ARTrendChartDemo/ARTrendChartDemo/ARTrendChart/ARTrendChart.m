@@ -9,12 +9,11 @@
 #import "ARTrendChart.h"
 #import "UIBezierPath+LxThroughPointsBezier.h"
 
-@interface ARTrendChart() <UIScrollViewDelegate>
+@interface ARTrendChart() <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 //data
 @property (weak, nonatomic) NSArray<NSString*>* xAxisItem;
 @property (weak, nonatomic) NSArray<NSNumber*>* yAxisItem;
-@property (weak, nonatomic) NSArray* dataArr;
 
 //view
 @property (weak, nonatomic) UIScrollView* scrollView;
@@ -28,6 +27,8 @@
 	UIColor* _trendAreaColor;
 	UIColor* _trendLineColor;
 	UIColor* _selectColor;
+	
+	CGFloat _screenWidth;
 	
 	CGFloat _yMax;
 	CGFloat _yMin;
@@ -48,10 +49,16 @@
 	CGFloat _xAxisTrailing;
 	CGSize _xAxisLabelSize;
 	CGFloat _xAxisPadding;
+	CGFloat _canvasWidth;
+	CGFloat _maxScrollViewContentOffset;
+	UILabel* _currentSelectLabel;
+	UIView* _currentSelectPointView;
+	UILabel* _currentSelectPointLabel;
 	
 	NSMutableArray* _pointArr;	//存储数据点原始高度
 	NSMutableArray* _pointCenterArr;	//存储数据点中心位置坐标，高度为转换后的高度
-	CGFloat _canvasWidth;
+	NSArray* _dataArr;	//数据点信息
+	
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -81,12 +88,16 @@
 	_yAxisTextFontSize = 14.0f;
 	_canvasWidth = 0;
 	_pointCenterArr = [[NSMutableArray alloc] init];
+	_screenWidth = [UIApplication sharedApplication].keyWindow.bounds.size.width;
+	_currentSelectLabel = [[UILabel alloc] init];
+	_currentSelectPointView = [[UIView alloc] init];
+	_currentSelectPointLabel = [[UILabel alloc] init];
 	
 	//add views
 	UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
 	scrollView.backgroundColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
 //	[scrollView setCanCancelContentTouches:YES];
-//	[scrollView setDelaysContentTouches:NO];
+	[scrollView setDelaysContentTouches:NO];
 	[scrollView setBounces:NO];
 	[scrollView setShowsHorizontalScrollIndicator:NO];
 	self.scrollView = scrollView;
@@ -158,37 +169,43 @@
 	_xAxisTextColor = xAxisTextColor;
 	
 	_xAxisLabelSize = [@"06/04" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:xAxisTextFontSize]}];
-	_xAxisPadding = 10.0f;
-	_xAxisLabelSize = CGSizeMake(_xAxisLabelSize.width + _xAxisPadding, _xAxisLabelSize.height);
+	_xAxisPadding = 5.0f;
+	_xAxisLabelSize = CGSizeMake(_xAxisLabelSize.width + 20, _xAxisLabelSize.height + 0.333333 * _xAxisPadding);
 	_canvasWidth = _numberOfXElements * (_xAxisLabelSize.width + _xAxisPadding) + _xAxisLabelSize.width;
-	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - _xAxisLabelSize.height - 2 * _xAxisPadding, _canvasWidth, _xAxisLabelSize.height + 2 * _xAxisPadding);
+	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - _xAxisLabelSize.height - 3 * _xAxisPadding, _canvasWidth, _xAxisLabelSize.height + 3 * _xAxisPadding);
 	_xAxisTrailing = _xAxisLabelSize.width;
+	
 	[_pointCenterArr removeAllObjects];
 	int index = 0;
 	for (NSString* str in xAxisItem) {
-		UILabel* label = [[UILabel alloc] init];
-		label.text = str;
-		label.textAlignment = NSTextAlignmentCenter;
-		label.font = [UIFont systemFontOfSize:xAxisTextFontSize];
-		label.textColor = xAxisTextColor;
-		label.frame = CGRectMake(index * (_xAxisPadding + _xAxisLabelSize.width) + _xAxisLabelSize.width, _xAxisPadding * 0.666666, _xAxisLabelSize.width, _xAxisLabelSize.height + _xAxisPadding * 0.5);
-		[self.xAxisView addSubview:label];
-		[_pointCenterArr addObject:[NSValue valueWithCGPoint:CGPointMake(label.center.x, 0)]];
+		[self setXAxisLabelWithStr:str index:index];
 		index++;
 	}
 	if (xAxisSummary && ![xAxisSummary isEqualToString:@""]) {
-		UILabel* label = [[UILabel alloc] init];
-		label.text = xAxisSummary;
-		label.textAlignment = NSTextAlignmentCenter;
-		label.font = [UIFont systemFontOfSize:xAxisTextFontSize];
-		label.textColor = xAxisTextColor;
-		label.frame = CGRectMake(index * (_xAxisPadding + _xAxisLabelSize.width), 0, _numberOfXElements * (_xAxisLabelSize.width + _xAxisPadding) - _xAxisPadding * 0.5, _xAxisLabelSize.height);
-		[self.xAxisView addSubview:label];
-		[_pointCenterArr addObject:[NSValue valueWithCGPoint:CGPointMake(label.center.x, 0)]];
+		[self setXAxisLabelWithStr:xAxisSummary index:index];
 	}
 	self.scrollView.contentSize = CGSizeMake(_xAxisView.frame.size.width, self.scrollView.frame.size.height);
-	NSLog(@"%lf %lf", self.scrollView.contentSize.width, self.scrollView.contentSize.height);
+	_maxScrollViewContentOffset = [self.scrollView contentSize].width - self.scrollView.frame.size.width;
 	[self.scrollView setScrollEnabled:YES];
+}
+
+- (void)setXAxisLabelWithStr:(NSString*)str index:(int)index {
+	UITapGestureRecognizer* tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(xAxisLabelTapped:)];
+	tapGesture.delegate = self;
+	UILabel* label = [[UILabel alloc] init];
+	label.text = str;
+	label.tag = index;
+	label.textAlignment = NSTextAlignmentCenter;
+	label.font = [UIFont systemFontOfSize:_xAxisTextFontSize];
+	label.textColor = _xAxisTextColor;
+	label.frame = CGRectMake(index * (_xAxisPadding + _xAxisLabelSize.width) + _xAxisLabelSize.width, _xAxisPadding, _xAxisLabelSize.width, _xAxisLabelSize.height + _xAxisPadding * 0.5);
+	label.layer.borderColor = _selectColor.CGColor;
+	label.layer.cornerRadius = _xAxisPadding * 2;
+	label.userInteractionEnabled = YES;
+	[label addGestureRecognizer:tapGesture];
+	[self.xAxisView addSubview:label];
+	[_pointCenterArr addObject:[NSValue valueWithCGPoint:CGPointMake(label.center.x, 0)]];
+	
 }
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor trendAreaColor:(UIColor *)trendAreaColor trendLineColor:(UIColor *)trendLineColor selectColor:(UIColor *)selectColor {
@@ -201,7 +218,7 @@
 }
 
 - (void)setData:(NSArray *)dataArr {
-	self.dataArr = dataArr;
+	_dataArr = dataArr;
 	
 	UIView* trendChart = [[UIView alloc] init];
 	self.trendChart = trendChart;
@@ -248,5 +265,73 @@
 	return _yMinCenterY - offset + 10;	//+10因为YAxisView的y坐标从10开始
 }
 
+- (void)xAxisLabelTapped:(UITapGestureRecognizer*)sender {
+	NSLog(@"tap");
+	[self generatePointView:sender];
+	
+	//滚动scrollView
+	CGFloat offset = sender.view.frame.origin.x - (_screenWidth - _xAxisLabelSize.width) * 0.5;
+	if (offset < 0) {
+		offset = 0;
+	} else if (offset > _maxScrollViewContentOffset) {
+		offset = _maxScrollViewContentOffset;
+	}
+	[self.scrollView setContentOffset:CGPointMake(offset, 0) animated:YES];
+}
+
+- (void)generatePointView:(UITapGestureRecognizer*)sender {
+	NSInteger index = sender.view.tag;
+	[_currentSelectPointView removeFromSuperview];
+	[_currentSelectPointLabel removeFromSuperview];
+	_currentSelectLabel.layer.borderWidth = 0.0f;
+	_currentSelectLabel.textColor = _xAxisTextColor;
+	
+	_currentSelectLabel = (UILabel*)sender.view;
+	_currentSelectLabel.layer.borderWidth = 1.0f;
+	_currentSelectLabel.textColor = _selectColor;
+	
+	UIView* pointView = [[UIView alloc] initWithFrame:CGRectMake([_pointCenterArr[index] CGPointValue].x - 5,
+																 [_pointCenterArr[index] CGPointValue].y - 5,
+																 10, 10)];
+	pointView.backgroundColor = _backgroundColor;
+	pointView.layer.borderWidth = 1.0;
+	pointView.layer.borderColor = _trendLineColor.CGColor;
+	pointView.layer.masksToBounds = YES;
+	pointView.layer.cornerRadius = pointView.frame.size.width * 0.5;
+	_currentSelectPointView = pointView;
+	[self.scrollView addSubview:pointView];
+	
+	CGSize size = [[NSString stringWithFormat:@"%.0lf", [_dataArr[index] doubleValue]] sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:_xAxisTextFontSize]}];
+	size = CGSizeMake(size.width + 15, size.height);
+	UILabel* pointLabel = [[UILabel alloc] init];
+	pointLabel.backgroundColor = _backgroundColor;
+	pointLabel.layer.borderColor = _trendLineColor.CGColor;
+	pointLabel.layer.borderWidth = 1.0f;
+	pointLabel.layer.masksToBounds = YES;
+	pointLabel.layer.cornerRadius = size.width * 0.22;
+	pointLabel.textColor = _trendLineColor;
+	pointLabel.font = [UIFont systemFontOfSize:_xAxisTextFontSize];
+	pointLabel.text = [NSString stringWithFormat:@"%.0lf", [_dataArr[index] doubleValue]];
+	pointLabel.textAlignment = NSTextAlignmentCenter;
+	pointLabel.frame = CGRectMake(pointView.center.x - size.width * 0.5,
+								  pointView.frame.origin.y - size.height - 5,
+								  size.width, size.height);
+	_currentSelectPointLabel = pointLabel;
+	[self.scrollView addSubview:pointLabel];
+	
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+	if ([NSStringFromClass([touch.view class]) isEqualToString:@"UILabel"]) {
+		return YES;
+	}
+	return NO;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+	return YES;
+}
 
 @end
