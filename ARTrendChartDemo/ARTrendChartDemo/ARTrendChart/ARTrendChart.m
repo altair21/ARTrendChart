@@ -51,6 +51,8 @@
 	CGFloat _xAxisPadding;
 	CGFloat _canvasWidth;
 	CGFloat _maxScrollViewContentOffset;
+	CGFloat _areaLeft;
+	CGFloat _areaRight;
 	CGRect _trendChartFrame;
 	UILabel* _currentSelectLabel;
 	UIView* _currentSelectPointView;
@@ -79,7 +81,13 @@
 	[super layoutSubviews];
 	
 	self.scrollView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+	self.scrollView.contentOffset = CGPointMake(0, 0);
 	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - _xAxisLabelSize.height - 3 * _xAxisPadding, _canvasWidth, _xAxisLabelSize.height + 3 * _xAxisPadding);
+	_trendChartFrame = CGRectMake(0, 0, _areaRight, self.frame.size.height - _xAxisView.frame.size.height);
+	self.trendChart.frame = CGRectMake(0, 0, 0, _trendChartFrame.size.height);
+	
+//	[self drawYAxis];
+//	[self drawXAxis];
 }
 
 - (void)ARTrendChartInit {
@@ -237,8 +245,8 @@
 		pointView.backgroundColor = [UIColor whiteColor];
 //		[self.scrollView addSubview:pointView];
 	}
-	CGFloat areaLeft = [_pointCenterArr[0] CGPointValue].x;
-	CGFloat areaRight = [_pointCenterArr[dataArr.count-1] CGPointValue].x;
+	_areaLeft = [_pointCenterArr[0] CGPointValue].x;
+	_areaRight = [_pointCenterArr[dataArr.count-1] CGPointValue].x;
 	
 	//填充区域
 	CGPoint point1 = CGPointMake([_pointCenterArr[dataArr.count-1] CGPointValue].x, _xAxisView.frame.origin.y + 10);
@@ -257,7 +265,7 @@
     shapeLayer.lineWidth = 1;
     shapeLayer.path = curve.CGPath;
     shapeLayer.lineCap = kCALineCapRound;
-	_trendChartFrame = CGRectMake(0, 0, areaRight, self.frame.size.height - _xAxisView.frame.size.height);
+	_trendChartFrame = CGRectMake(0, 0, _areaRight, self.frame.size.height - _xAxisView.frame.size.height);
 	self.trendChart.layer.masksToBounds = YES;
     [self.trendChart.layer addSublayer:shapeLayer];
 	self.trendChart.frame = CGRectMake(0, 0, 0, _trendChartFrame.size.height);
