@@ -77,6 +77,9 @@
 
 - (void)layoutSubviews {
 	[super layoutSubviews];
+	
+	self.scrollView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - _xAxisLabelSize.height - 3 * _xAxisPadding, _canvasWidth, _xAxisLabelSize.height + 3 * _xAxisPadding);
 }
 
 - (void)ARTrendChartInit {
@@ -89,7 +92,7 @@
 	_yAxisTextFontSize = 14.0f;
 	_canvasWidth = 0;
 	_pointCenterArr = [[NSMutableArray alloc] init];
-	_screenWidth = [UIApplication sharedApplication].keyWindow.bounds.size.width;
+	_screenWidth = [UIScreen mainScreen].currentMode.size.width * 0.5;
 	_currentSelectLabel = [[UILabel alloc] init];
 	_currentSelectPointView = [[UIView alloc] init];
 	_currentSelectPointLabel = [[UILabel alloc] init];
@@ -186,6 +189,7 @@
 		[self setXAxisLabelWithStr:xAxisSummary index:index];
 	}
 	self.scrollView.contentSize = CGSizeMake(_xAxisView.frame.size.width, self.scrollView.frame.size.height);
+	NSLog(@"%lf %lf", self.scrollView.contentSize.width, self.scrollView.contentSize.height);
 	_maxScrollViewContentOffset = [self.scrollView contentSize].width - self.scrollView.frame.size.width;
 	[self.scrollView setScrollEnabled:YES];
 }
@@ -267,8 +271,7 @@
 }
 
 - (void)xAxisLabelTapped:(UITapGestureRecognizer*)sender {
-	NSLog(@"tap");
-	[self generatePointView:sender];
+	[self generatePointView:(UILabel*)sender.view index:sender.view.tag];
 	
 	//滚动scrollView
 	CGFloat offset = sender.view.frame.origin.x - (_screenWidth - _xAxisLabelSize.width) * 0.5;
@@ -280,14 +283,13 @@
 	[self.scrollView setContentOffset:CGPointMake(offset, 0) animated:YES];
 }
 
-- (void)generatePointView:(UITapGestureRecognizer*)sender {
-	NSInteger index = sender.view.tag;
+- (void)generatePointView:(UILabel*)view index:(NSInteger)index {
 	[_currentSelectPointView removeFromSuperview];
 	[_currentSelectPointLabel removeFromSuperview];
 	_currentSelectLabel.layer.borderWidth = 0.0f;
 	_currentSelectLabel.textColor = _xAxisTextColor;
 	
-	_currentSelectLabel = (UILabel*)sender.view;
+	_currentSelectLabel = view;
 	_currentSelectLabel.layer.borderWidth = 1.0f;
 	_currentSelectLabel.textColor = _selectColor;
 	
@@ -323,9 +325,17 @@
 }
 
 - (void)appear {
+//	self.scrollView.contentSize = CGSizeMake(_xAxisView.frame.size.width, self.scrollView.frame.size.height);
+	_maxScrollViewContentOffset = [self.scrollView contentSize].width - self.scrollView.frame.size.width;
 	[UIView animateWithDuration:2.0 animations:^{
 		self.trendChart.frame = _trendChartFrame;
 		self.scrollView.contentOffset = CGPointMake(_maxScrollViewContentOffset, 0);
+	} completion:^(BOOL finished) {
+		for (UIView* view in _xAxisView.subviews) {
+			if (view.tag == _dataArr.count - 1) {
+				[self generatePointView:(UILabel*)view index:view.tag];
+			}
+		}
 	}];
 }
 
