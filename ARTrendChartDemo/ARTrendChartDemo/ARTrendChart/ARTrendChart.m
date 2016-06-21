@@ -24,6 +24,11 @@
 @end
 
 @implementation ARTrendChart {
+	UIColor* _backgroundColor;
+	UIColor* _trendAreaColor;
+	UIColor* _trendLineColor;
+	UIColor* _selectColor;
+	
 	CGFloat _yMax;
 	CGFloat _yMin;
 	CGFloat _yAxisTextFontSize;
@@ -68,9 +73,10 @@
 
 - (void)ARTrendChartInit {
 	//init property
-	self.backgroundColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
-	self.trendAreaColor = [UIColor colorWithRed:0.4824 green:0.6118 blue:0.8392 alpha:1];
-	self.trendLineColor = [UIColor whiteColor];
+	_backgroundColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
+	_trendAreaColor = [UIColor colorWithRed:0.4824 green:0.6118 blue:0.8392 alpha:1];
+	_trendLineColor = [UIColor whiteColor];
+	_selectColor = [UIColor colorWithRed:0.3568 green:0.5137 blue:0.8 alpha:1];
 	_yAxisTextColor = [UIColor whiteColor];
 	_yAxisTextFontSize = 14.0f;
 	_canvasWidth = 0;
@@ -124,7 +130,7 @@
 		[self.yAxisView addSubview:label];
 		if (index == 1) {
 			_yMinCenterY = label.center.y;
-		} else if (index == yAxisItem.count - 1) {
+		} else if (index == yAxisItem.count) {
 			_yMaxCenterY = label.center.y;
 		}
 		index++;
@@ -186,11 +192,12 @@
 }
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor trendAreaColor:(UIColor *)trendAreaColor trendLineColor:(UIColor *)trendLineColor selectColor:(UIColor *)selectColor {
+	_backgroundColor = backgroundColor;
 	self.backgroundColor = backgroundColor;
 	self.scrollView.backgroundColor = backgroundColor;
-	self.trendAreaColor = trendAreaColor;
-	self.trendLineColor = trendLineColor;
-	self.selectColor = selectColor;
+	_trendAreaColor = trendAreaColor;
+	_trendLineColor = trendLineColor;
+	_selectColor = selectColor;
 }
 
 - (void)setData:(NSArray *)dataArr {
@@ -198,35 +205,47 @@
 	
 	UIView* trendChart = [[UIView alloc] init];
 	self.trendChart = trendChart;
-	self.trendChart.frame = CGRectMake(0, 0, _canvasWidth, self.frame.size.height - _xAxisView.frame.size.height);
     _pointArr = [[NSMutableArray alloc] init];
 	NSLog(@"%lf", _xAxisTrailing);
 	for (int i = 0; i < dataArr.count; i++) {
 		CGPoint point = CGPointMake([_pointCenterArr[i] CGPointValue].x, [self convertYAxisToChart:dataArr[i]]);
+		_pointCenterArr[i] = [NSValue valueWithCGPoint:point];
 		[_pointArr addObject:[NSValue valueWithCGPoint:point]];
 		UIView* pointView = [[UIView alloc] initWithFrame:CGRectMake(point.x - 1, point.y - 1, 2, 2)];
 		pointView.backgroundColor = [UIColor whiteColor];
-		[self.scrollView addSubview:pointView];
+//		[self.scrollView addSubview:pointView];
 	}
-    
+	CGFloat areaLeft = [_pointCenterArr[0] CGPointValue].x;
+	CGFloat areaRight = [_pointCenterArr[dataArr.count-1] CGPointValue].x;
+	
+	//填充区域
+	CGPoint point1 = CGPointMake([_pointCenterArr[dataArr.count-1] CGPointValue].x, _xAxisView.frame.origin.y + 10);
+	CGPoint point2 = CGPointMake([_pointCenterArr[0] CGPointValue].x, _xAxisView.frame.origin.y + 10);
+	[_pointArr addObject:[NSValue valueWithCGPoint:point1]];
+	[_pointArr addObject:[NSValue valueWithCGPoint:point2]];
+	
+    //绘制
     UIBezierPath* curve = [UIBezierPath bezierPath];
     [curve moveToPoint:[_pointArr.firstObject CGPointValue]];
     [curve addBezierThroughPoints:_pointArr];
-    
+	
     CAShapeLayer* shapeLayer = [CAShapeLayer layer];
-    shapeLayer.strokeColor = self.trendLineColor.CGColor;
-    shapeLayer.fillColor = nil;
+    shapeLayer.strokeColor = _trendLineColor.CGColor;
+    shapeLayer.fillColor = _trendAreaColor.CGColor;
     shapeLayer.lineWidth = 1;
     shapeLayer.path = curve.CGPath;
     shapeLayer.lineCap = kCALineCapRound;
+	self.trendChart.frame = CGRectMake(0, 0, areaRight, self.frame.size.height - _xAxisView.frame.size.height);
+	self.trendChart.layer.masksToBounds = YES;
     [self.trendChart.layer addSublayer:shapeLayer];
+	
 	[self.scrollView addSubview:self.trendChart];
 }
 
 - (CGFloat)convertYAxisToChart:(NSNumber*)number {
 	CGFloat height = [number doubleValue];
 	CGFloat offset = (height - _yMin) * _yAxisUnitLength;
-	return _yMinCenterY - offset;
+	return _yMinCenterY - offset + 10;	//+10因为YAxisView的y坐标从10开始
 }
 
 

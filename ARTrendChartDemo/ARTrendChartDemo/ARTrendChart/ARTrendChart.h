@@ -12,10 +12,10 @@
 
 
 @property (weak, nonatomic) UIView* trendChart;
-@property (weak, nonatomic) UIColor* backgroundColor;
-@property (weak, nonatomic) UIColor* trendAreaColor;
-@property (weak, nonatomic) UIColor* trendLineColor;
-@property (weak, nonatomic) UIColor* selectColor;
+//@property (weak, nonatomic) UIColor* backgroundColor;
+//@property (weak, nonatomic) UIColor* trendAreaColor;
+//@property (weak, nonatomic) UIColor* trendLineColor;
+//@property (weak, nonatomic) UIColor* selectColor;
 
 - (instancetype)initWithFrame:(CGRect)frame;
 - (void)setYAxisItem:(NSArray*)yAxisItem yAxisItemSummary:(NSString*)yAxisSummary yAxisTextFontSize:(CGFloat)yAxisTextFontSize yAxisTextColor:(UIColor*)yAxisTextColor;
