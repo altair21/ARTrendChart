@@ -30,6 +30,7 @@
     [chart setData:@[@73.0, @85, @88.5, @81.3, @115.2, @94.3, @122.8, @130.2, @145.5]];
 	[self.view addSubview:chart];
 	
+	[chart appear];
 }
 
 - (void)didReceiveMemoryWarning {

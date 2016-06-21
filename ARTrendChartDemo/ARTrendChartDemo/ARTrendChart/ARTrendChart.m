@@ -51,6 +51,7 @@
 	CGFloat _xAxisPadding;
 	CGFloat _canvasWidth;
 	CGFloat _maxScrollViewContentOffset;
+	CGRect _trendChartFrame;
 	UILabel* _currentSelectLabel;
 	UIView* _currentSelectPointView;
 	UILabel* _currentSelectPointLabel;
@@ -252,10 +253,10 @@
     shapeLayer.lineWidth = 1;
     shapeLayer.path = curve.CGPath;
     shapeLayer.lineCap = kCALineCapRound;
-	self.trendChart.frame = CGRectMake(0, 0, areaRight, self.frame.size.height - _xAxisView.frame.size.height);
+	_trendChartFrame = CGRectMake(0, 0, areaRight, self.frame.size.height - _xAxisView.frame.size.height);
 	self.trendChart.layer.masksToBounds = YES;
     [self.trendChart.layer addSublayer:shapeLayer];
-	
+	self.trendChart.frame = CGRectMake(0, 0, 0, _trendChartFrame.size.height);
 	[self.scrollView addSubview:self.trendChart];
 }
 
@@ -319,6 +320,13 @@
 	_currentSelectPointLabel = pointLabel;
 	[self.scrollView addSubview:pointLabel];
 	
+}
+
+- (void)appear {
+	[UIView animateWithDuration:2.0 animations:^{
+		self.trendChart.frame = _trendChartFrame;
+		self.scrollView.contentOffset = CGPointMake(_maxScrollViewContentOffset, 0);
+	}];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
