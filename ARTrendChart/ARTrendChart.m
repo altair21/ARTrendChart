@@ -11,10 +11,6 @@
 
 @interface ARTrendChart() <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
-//data
-@property (weak, nonatomic) NSArray<NSString*>* xAxisItem;
-@property (weak, nonatomic) NSArray<NSNumber*>* yAxisItem;
-
 //view
 @property (weak, nonatomic) UIScrollView* scrollView;
 @property (weak, nonatomic) UIView* xAxisView;
@@ -33,8 +29,11 @@
 	CGFloat _yMax;
 	CGFloat _yMin;
 	CGFloat _yAxisTextFontSize;
-	UIColor* _yAxisTextColor;
+    CGSize _yAxisLabelSize;
 	int _numberOfYElements;
+    UIColor* _yAxisTextColor;
+    NSArray* _yAxisItem;
+    NSString* _yAxisSummary;
 	
 	CGFloat _yMaxCenterY;
 	CGFloat _yMinCenterY;
@@ -43,14 +42,18 @@
 	CGFloat _xMax;
 	CGFloat _xMin;
 	CGFloat _xAxisTextFontSize;
-	UIColor* _xAxisTextColor;
+    CGSize _xAxisLabelSize;
 	int _numberOfXElements;
+    UIColor* _xAxisTextColor;
+    NSArray* _xAxisItem;
+    NSString* _xAxisSummary;
 	
 	CGFloat _xAxisTrailing;
-	CGSize _xAxisLabelSize;
 	CGFloat _xAxisPadding;
 	CGFloat _canvasWidth;
 	CGFloat _maxScrollViewContentOffset;
+	CGFloat _areaLeft;
+	CGFloat _areaRight;
 	CGRect _trendChartFrame;
 	UILabel* _currentSelectLabel;
 	UIView* _currentSelectPointView;
@@ -79,7 +82,16 @@
 	[super layoutSubviews];
 	
 	self.scrollView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+	self.scrollView.contentOffset = CGPointMake(0, 0);
 	_xAxisView.frame = CGRectMake(0, self.scrollView.frame.size.height - _xAxisLabelSize.height - 3 * _xAxisPadding, _canvasWidth, _xAxisLabelSize.height + 3 * _xAxisPadding);
+	_trendChartFrame = CGRectMake(0, 0, _areaRight, self.frame.size.height - _xAxisView.frame.size.height);
+	self.trendChart.frame = CGRectMake(0, 0, 0, _trendChartFrame.size.height);
+    
+    [self drawYAxis];
+    [self setData:_dataArr];
+	
+//	[self drawYAxis];
+//	[self drawXAxis];
 }
 
 - (void)ARTrendChartInit {
@@ -118,10 +130,10 @@
 	
 }
 
-#pragma mark - setter
+#pragma mark - Setter
 
 - (void)setYAxisItem:(NSArray*)yAxisItem yAxisItemSummary:(NSString*)yAxisSummary yAxisTextFontSize:(CGFloat)yAxisTextFontSize yAxisTextColor:(UIColor*)yAxisTextColor {
-	self.yAxisItem = yAxisItem;
+	_yAxisItem = yAxisItem;
 	_numberOfYElements = (int)yAxisItem.count;
 	_yMax = [yAxisItem[_numberOfYElements - 1] doubleValue];
 	_yMin = [yAxisItem[0] doubleValue];
@@ -130,40 +142,15 @@
 	}
 	_yAxisTextFontSize = yAxisTextFontSize;
 	_yAxisTextColor = yAxisTextColor;
+    _yAxisSummary = yAxisSummary;
 	
-	CGSize labelSize = [@"20000" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:yAxisTextFontSize]}];
-	CGFloat padding = (_yAxisView.frame.size.height - _numberOfYElements * labelSize.height) / (_numberOfYElements + 1);
-	_yAxisView.frame = CGRectMake(_yAxisView.frame.origin.x, _yAxisView.frame.origin.y, 0, _yAxisView.frame.size.height);
-	__block int index = 1;
-	for (NSNumber* num in yAxisItem) {
-		UILabel* label = [[UILabel alloc] init];
-		label.text = [NSString stringWithFormat:@"%.0lf", [num doubleValue]];
-		label.textAlignment = NSTextAlignmentLeft;
-		label.font = [UIFont systemFontOfSize:yAxisTextFontSize];
-		label.textColor = yAxisTextColor;
-		label.frame = CGRectMake(0, _yAxisView.frame.size.height - index * (padding + labelSize.height) - padding, self.frame.size.width / 2, labelSize.height);
-		[self.yAxisView addSubview:label];
-		if (index == 1) {
-			_yMinCenterY = label.center.y;
-		} else if (index == yAxisItem.count) {
-			_yMaxCenterY = label.center.y;
-		}
-		index++;
-	}
-	_yAxisUnitLength = (_yMinCenterY - _yMaxCenterY) / (_yMax - _yMin);
-	if (yAxisSummary && ![yAxisSummary isEqualToString:@""]) {
-		UILabel* label = [[UILabel alloc] init];
-		label.text = yAxisSummary;
-		label.textAlignment = NSTextAlignmentLeft;
-		label.font = [UIFont systemFontOfSize:yAxisTextFontSize];
-		label.textColor = yAxisTextColor;
-		label.frame = CGRectMake(0, _yAxisView.frame.size.height - index * (padding + labelSize.height) - padding, self.frame.size.width / 2, labelSize.height);
-		[self.yAxisView addSubview:label];
-	}
+	_yAxisLabelSize = [@"20000" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:yAxisTextFontSize]}];
+	
+    [self drawYAxis];
 }
 
 - (void)setXAxisItem:(NSArray *)xAxisItem xAxisItemSummary:(NSString *)xAxisSummary xAxisTextFontSize:(CGFloat)xAxisTextFontSize xAxisTextColor:(UIColor *)xAxisTextColor {
-	self.xAxisItem = xAxisItem;
+	_xAxisItem = xAxisItem;
 	_numberOfXElements = (int)xAxisItem.count;
 	
 	if (xAxisSummary && ![xAxisSummary isEqualToString:@""]) {
@@ -171,6 +158,7 @@
 	}
 	_xAxisTextFontSize = xAxisTextFontSize;
 	_xAxisTextColor = xAxisTextColor;
+    _xAxisSummary = xAxisSummary;
 	
 	_xAxisLabelSize = [@"06/04" sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:xAxisTextFontSize]}];
 	_xAxisPadding = 5.0f;
@@ -237,8 +225,8 @@
 		pointView.backgroundColor = [UIColor whiteColor];
 //		[self.scrollView addSubview:pointView];
 	}
-	CGFloat areaLeft = [_pointCenterArr[0] CGPointValue].x;
-	CGFloat areaRight = [_pointCenterArr[dataArr.count-1] CGPointValue].x;
+	_areaLeft = [_pointCenterArr[0] CGPointValue].x;
+	_areaRight = [_pointCenterArr[dataArr.count-1] CGPointValue].x;
 	
 	//填充区域
 	CGPoint point1 = CGPointMake([_pointCenterArr[dataArr.count-1] CGPointValue].x, _xAxisView.frame.origin.y + 10);
@@ -257,11 +245,47 @@
     shapeLayer.lineWidth = 1;
     shapeLayer.path = curve.CGPath;
     shapeLayer.lineCap = kCALineCapRound;
-	_trendChartFrame = CGRectMake(0, 0, areaRight, self.frame.size.height - _xAxisView.frame.size.height);
+	_trendChartFrame = CGRectMake(0, 0, _areaRight, self.frame.size.height - _xAxisView.frame.size.height);
 	self.trendChart.layer.masksToBounds = YES;
     [self.trendChart.layer addSublayer:shapeLayer];
 	self.trendChart.frame = CGRectMake(0, 0, 0, _trendChartFrame.size.height);
 	[self.scrollView addSubview:self.trendChart];
+}
+
+#pragma mark - Draw
+
+- (void)drawYAxis {
+    CGFloat padding = (_yAxisView.frame.size.height - _numberOfYElements * _yAxisLabelSize.height) / (_numberOfYElements + 1);
+    _yAxisView.frame = CGRectMake(_yAxisView.frame.origin.x, _yAxisView.frame.origin.y, 0, self.frame.size.height - _xAxisView.frame.size.height);
+    for (UIView* view in _yAxisView.subviews) {
+        [view removeFromSuperview];
+    }
+    __block int index = 1;
+    for (NSNumber* num in _yAxisItem) {
+        UILabel* label = [[UILabel alloc] init];
+        label.text = [NSString stringWithFormat:@"%.0lf", [num doubleValue]];
+        label.textAlignment = NSTextAlignmentLeft;
+        label.font = [UIFont systemFontOfSize:_yAxisTextFontSize];
+        label.textColor = _yAxisTextColor;
+        label.frame = CGRectMake(0, _yAxisView.frame.size.height - index * (padding + _yAxisLabelSize.height) - padding * 0.5, self.frame.size.width / 2, _yAxisLabelSize.height);
+        [self.yAxisView addSubview:label];
+        if (index == 1) {
+            _yMinCenterY = label.center.y;
+        } else if (index == _yAxisItem.count) {
+            _yMaxCenterY = label.center.y;
+        }
+        index++;
+    }
+    _yAxisUnitLength = (_yMinCenterY - _yMaxCenterY) / (_yMax - _yMin);
+    if (_yAxisSummary && ![_yAxisSummary isEqualToString:@""]) {
+        UILabel* label = [[UILabel alloc] init];
+        label.text = _yAxisSummary;
+        label.textAlignment = NSTextAlignmentLeft;
+        label.font = [UIFont systemFontOfSize:_yAxisTextFontSize];
+        label.textColor = _yAxisTextColor;
+        label.frame = CGRectMake(0, _yAxisView.frame.size.height - index * (padding + _yAxisLabelSize.height) - padding * 0.5, self.frame.size.width / 2, _yAxisLabelSize.height);
+        [self.yAxisView addSubview:label];
+    }
 }
 
 - (CGFloat)convertYAxisToChart:(NSNumber*)number {
