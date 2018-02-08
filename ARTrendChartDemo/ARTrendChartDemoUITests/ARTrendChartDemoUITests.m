@@ -3,7 +3,7 @@
 //  ARTrendChartDemoUITests
 //
 //  Created by intern03 on 16/6/20.
-//  Copyright © 2016年 curacloudcorp. All rights reserved.
+//  Copyright © 2016年 altair21. All rights reserved.
 //
 
 #import <XCTest/XCTest.h>

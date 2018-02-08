@@ -229,7 +229,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0730;
-				ORGANIZATIONNAME = curacloudcorp;
+				ORGANIZATIONNAME = altair21;
 				TargetAttributes = {
 					82EB82021D17AED7004C2FCC = {
 						CreatedOnToolsVersion = 7.3;
